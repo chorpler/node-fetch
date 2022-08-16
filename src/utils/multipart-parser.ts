@@ -29,15 +29,28 @@ const COLON = 58;
 const A = 97;
 const Z = 122;
 
-const lower = c => c | 0x20;
+const lower = (c:number) => c | 0x20;
 
 const noop = () => {};
 
 class MultipartParser {
+	public index:number;
+	public flags:number;
+	public boundary:Uint8Array;
+	public boundaryChars:any;
+	public lookbehind:Uint8Array;
+	public state:number;
+	public onHeaderEnd:Function;
+	public onHeaderField:Function;
+	public onHeadersEnd:Function;
+	public onHeaderValue:Function;
+	public onPartBegin:Function;
+	public onPartData:Function;
+	public onPartEnd:Function;
 	/**
 	 * @param {string} boundary
 	 */
-	constructor(boundary) {
+	constructor(boundary:string) {
 		this.index = 0;
 		this.flags = 0;
 
@@ -66,7 +79,7 @@ class MultipartParser {
 	/**
 	 * @param {Uint8Array} data
 	 */
-	write(data) {
+	write(data:Uint8Array) {
 		let i = 0;
 		const length_ = data.length;
 		let previousIndex = this.index;
@@ -77,32 +90,32 @@ class MultipartParser {
 		let c;
 		let cl;
 
-		const mark = name => {
-			this[name + 'Mark'] = i;
+		const mark = (name:string) => {
+			(this as any)[name + 'Mark'] = i;
 		};
 
-		const clear = name => {
-			delete this[name + 'Mark'];
+		const clear = (name:string) => {
+			delete (this as any)[name + 'Mark'];
 		};
 
-		const callback = (callbackSymbol, start, end, ui8a) => {
+		const callback = (callbackSymbol:string, start?:number, end?:number, ui8a?:Uint8Array) => {
 			if (start === undefined || start !== end) {
-				this[callbackSymbol](ui8a && ui8a.subarray(start, end));
+				(this as any)[callbackSymbol](ui8a && ui8a.subarray(start, end));
 			}
 		};
 
-		const dataCallback = (name, clear) => {
+		const dataCallback = (name:string, clear?:boolean) => {
 			const markSymbol = name + 'Mark';
 			if (!(markSymbol in this)) {
 				return;
 			}
 
 			if (clear) {
-				callback(name, this[markSymbol], i, data);
-				delete this[markSymbol];
+				callback(name, (this as any)[markSymbol], i, data);
+				delete (this as any)[markSymbol];
 			} else {
-				callback(name, this[markSymbol], data.length, data);
-				this[markSymbol] = 0;
+				callback(name, (this as any)[markSymbol], data.length, data);
+				(this as any)[markSymbol] = 0;
 			}
 		};
 
@@ -317,7 +330,7 @@ class MultipartParser {
 	}
 }
 
-function _fileName(headerValue) {
+function _fileName(headerValue:string) {
 	// matches either a quoted-string or a token (RFC 2616 section 19.5.1)
 	const m = headerValue.match(/\bfilename=("(.*?)"|([^()<>@,;:\\"/[\]?={}\s\t]+))($|;\s)/i);
 	if (!m) {
@@ -352,7 +365,7 @@ export async function toFormData(Body, ct) {
 	let entryName;
 	let contentType;
 	let filename;
-	const entryChunks = [];
+	const entryChunks:any[] = [];
 	const formData = new FormData();
 
 	const onPartData = ui8a => {

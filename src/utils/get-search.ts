@@ -1,4 +1,4 @@
-export const getSearch = parsedURL => {
+export const getSearch = (parsedURL:any) => {
 	if (parsedURL.search) {
 		return parsedURL.search;
 	}

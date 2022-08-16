@@ -182,6 +182,12 @@ export function isUrlPotentiallyTrustworthy(url) {
  * @returns {external:URL} modified referrerOrigin
  */
 
+export type ReferrerURLCallback = Function;
+export type ReferrerOriginCallback = Function;
+export interface ReferrerCallbacksObject {
+	referrerURLCallback    ?: ReferrerURLCallback    ;
+	referrerOriginCallback ?: ReferrerOriginCallback ;
+}
 /**
  * @see {@link https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer|Referrer Policy §8.3. Determine request's Referrer}
  * @param {Request} request
@@ -190,7 +196,9 @@ export function isUrlPotentiallyTrustworthy(url) {
  * @param {module:utils/referrer~referrerOriginCallback} o.referrerOriginCallback
  * @returns {external:URL} Request's referrer
  */
-export function determineRequestsReferrer(request, {referrerURLCallback, referrerOriginCallback} = {}) {
+export function determineRequestsReferrer(request, referrerCallbacksObject:ReferrerCallbacksObject = {}) {
+	let referrerURLCallback = referrerCallbacksObject.referrerURLCallback;
+	let referrerOriginCallback = referrerCallbacksObject.referrerOriginCallback;
 	// There are 2 notes in the specification about invalid pre-conditions.  We return null, here, for
 	// these cases:
 	// > Note: If request's referrer is "no-referrer", Fetch will not call into this algorithm.

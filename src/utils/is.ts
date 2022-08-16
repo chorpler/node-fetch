@@ -12,7 +12,7 @@ const NAME = Symbol.toStringTag;
  * @param {*} object - Object to check for
  * @return {boolean}
  */
-export const isURLSearchParameters = object => {
+export const isURLSearchParameters = (object:any) => {
 	return (
 		typeof object === 'object' &&
 		typeof object.append === 'function' &&
@@ -31,7 +31,7 @@ export const isURLSearchParameters = object => {
  * @param {*} object - Object to check for
  * @return {boolean}
  */
-export const isBlob = object => {
+export const isBlob = (object:any) => {
 	return (
 		object &&
 		typeof object === 'object' &&
@@ -48,7 +48,7 @@ export const isBlob = object => {
  * @param {*} object - Object to check for
  * @return {boolean}
  */
-export const isAbortSignal = object => {
+export const isAbortSignal = (object:any) => {
 	return (
 		typeof object === 'object' && (
 			object[NAME] === 'AbortSignal' ||
@@ -65,7 +65,7 @@ export const isAbortSignal = object => {
  * @param {string|URL} original
  * @param {string|URL} destination
  */
-export const isDomainOrSubdomain = (destination, original) => {
+export const isDomainOrSubdomain = (destination:string|URL, original:string|URL) => {
 	const orig = new URL(original).hostname;
 	const dest = new URL(destination).hostname;
 
@@ -79,7 +79,7 @@ export const isDomainOrSubdomain = (destination, original) => {
  * @param {string|URL} original
  * @param {string|URL} destination
  */
-export const isSameProtocol = (destination, original) => {
+export const isSameProtocol = (destination:string|URL, original:string|URL) => {
 	const orig = new URL(original).protocol;
 	const dest = new URL(destination).protocol;
 

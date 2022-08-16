@@ -10,8 +10,8 @@ import {types} from 'util';
 import http from 'http';
 
 /* c8 ignore next 9 */
-const validateHeaderName = typeof http.validateHeaderName === 'function' ?
-	http.validateHeaderName :
+const validateHeaderName = typeof (http as any).validateHeaderName === 'function' ?
+(http as any).validateHeaderName :
 	name => {
 		if (!/^[\^`\-\w!#$%&'*+.|~]+$/.test(name)) {
 			const error = new TypeError(`Header name must be a valid HTTP token [${name}]`);
@@ -21,8 +21,8 @@ const validateHeaderName = typeof http.validateHeaderName === 'function' ?
 	};
 
 /* c8 ignore next 9 */
-const validateHeaderValue = typeof http.validateHeaderValue === 'function' ?
-	http.validateHeaderValue :
+const validateHeaderValue = typeof (http as any).validateHeaderValue === 'function' ?
+(http as any).validateHeaderValue :
 	(name, value) => {
 		if (/[^\t\u0020-\u007E\u0080-\u00FF]/.test(value)) {
 			const error = new TypeError(`Invalid character in header content ["${name}"]`);
@@ -50,14 +50,14 @@ export default class Headers extends URLSearchParams {
 	 * @constructor
 	 * @param {HeadersInit} [init] - Response headers
 	 */
-	constructor(init) {
+	constructor(init:HeadersInit) {
 		// Validate and normalize init object in [name, value(s)][]
 		/** @type {string[][]} */
-		let result = [];
+		let result:string[][]|any = [];
 		if (init instanceof Headers) {
 			const raw = init.raw();
 			for (const [name, values] of Object.entries(raw)) {
-				result.push(...values.map(value => [name, value]));
+				result.push(...(values as any).map(value => [name, value]));
 			}
 		} else if (init == null) { // eslint-disable-line no-eq-null, eqeqeq
 			// No op
@@ -74,7 +74,7 @@ export default class Headers extends URLSearchParams {
 
 				// Sequence<sequence<ByteString>>
 				// Note: per spec we have to first exhaust the lists then process them
-				result = [...init]
+				result = [...(init as any)]
 					.map(pair => {
 						if (
 							typeof pair !== 'object' || types.isBoxedPrimitive(pair)
@@ -129,7 +129,7 @@ export default class Headers extends URLSearchParams {
 					case 'getAll':
 						return name => {
 							validateHeaderName(name);
-							return URLSearchParams.prototype[p].call(
+							return (URLSearchParams as any).prototype[p].call(
 								target,
 								String(name).toLowerCase()
 							);
@@ -158,7 +158,7 @@ export default class Headers extends URLSearchParams {
 	}
 
 	get(name) {
-		const values = this.getAll(name);
+		const values:any = this.getAll(name);
 		if (values.length === 0) {
 			return null;
 		}
@@ -186,7 +186,7 @@ export default class Headers extends URLSearchParams {
 	/**
 	 * @type {() => IterableIterator<[string, string]>}
 	 */
-	* entries() {
+	* entries(): IterableIterator<[string, string]> {
 		for (const name of this.keys()) {
 			yield [name, this.get(name)];
 		}
@@ -201,7 +201,7 @@ export default class Headers extends URLSearchParams {
 	 * returning all headers and their values as array
 	 * @returns {Record<string, string[]>}
 	 */
-	raw() {
+	raw(): Record<string, string[]> {
 		return [...this.keys()].reduce((result, key) => {
 			result[key] = this.getAll(key);
 			return result;
@@ -244,11 +244,11 @@ Object.defineProperties(
  * not conform to HTTP grammar productions.
  * @param {import('http').IncomingMessage['rawHeaders']} headers
  */
-export function fromRawHeaders(headers = []) {
+export function fromRawHeaders(headers: import('http').IncomingMessage['rawHeaders'] = []) {
 	return new Headers(
 		headers
 			// Split into pairs
-			.reduce((result, value, index, array) => {
+			.reduce((result:any, value:any, index:number, array:any[]) => {
 				if (index % 2 === 0) {
 					result.push(array.slice(index, index + 2));
 				}

@@ -32,6 +32,7 @@ const INTERNALS = Symbol('Body internals');
  * @return  Void
  */
 export default class Body {
+	public size:number;
 	constructor(body, {
 		size = 0
 	} = {}) {
@@ -86,7 +87,7 @@ export default class Body {
 			body.on('error', error_ => {
 				const error = error_ instanceof FetchBaseError ?
 					error_ :
-					new FetchError(`Invalid response body while trying to fetch ${this.url}: ${error_.message}`, 'system', error_);
+					new FetchError(`Invalid response body while trying to fetch ${(this as any).url}: ${error_.message}`, 'system', error_);
 				this[INTERNALS].error = error;
 			});
 		}
@@ -111,7 +112,7 @@ export default class Body {
 	}
 
 	async formData() {
-		const ct = this.headers.get('content-type');
+		const ct = (this as any).headers.get('content-type');
 
 		if (ct.startsWith('application/x-www-form-urlencoded')) {
 			const formData = new FormData();
@@ -134,7 +135,7 @@ export default class Body {
 	 * @return Promise
 	 */
 	async blob() {
-		const ct = (this.headers && this.headers.get('content-type')) || (this[INTERNALS].body && this[INTERNALS].body.type) || '';
+		const ct = ((this as any).headers && (this as any).headers.get('content-type')) || (this[INTERNALS].body && this[INTERNALS].body.type) || '';
 		const buf = await this.arrayBuffer();
 
 		return new Blob([buf], {
@@ -194,7 +195,7 @@ Object.defineProperties(Body.prototype, {
  *
  * @return Promise
  */
-async function consumeBody(data) {
+async function consumeBody(data:any) {
 	if (data[INTERNALS].disturbed) {
 		throw new TypeError(`body used already for: ${data.url}`);
 	}
@@ -219,33 +220,34 @@ async function consumeBody(data) {
 
 	// Body is stream
 	// get ready to actually consume the body
-	const accum = [];
+	const accum:any[] = [];
 	let accumBytes = 0;
 
 	try {
-		for await (const chunk of body) {
+		for await (const chunk of ((body as any) as AsyncIterable<any>)) {
 			if (data.size > 0 && accumBytes + chunk.length > data.size) {
 				const error = new FetchError(`content size at ${data.url} over limit: ${data.size}`, 'max-size');
-				body.destroy(error);
+				(body as any).destroy(error);
 				throw error;
 			}
 
 			accumBytes += chunk.length;
 			accum.push(chunk);
 		}
-	} catch (error) {
+	} catch (error:any) {
 		const error_ = error instanceof FetchBaseError ? error : new FetchError(`Invalid response body while trying to fetch ${data.url}: ${error.message}`, 'system', error);
 		throw error_;
 	}
 
-	if (body.readableEnded === true || body._readableState.ended === true) {
+	if ((body as any).readableEnded === true || (body as any)._readableState.ended === true) {
 		try {
 			if (accum.every(c => typeof c === 'string')) {
 				return Buffer.from(accum.join(''));
 			}
 
 			return Buffer.concat(accum, accumBytes);
-		} catch (error) {
+		} catch (error:any) {
+			// let message = error && error.message != null ?
 			throw new FetchError(`Could not create Buffer from response body for ${data.url}: ${error.message}`, 'system', error);
 		}
 	} else {
@@ -272,7 +274,7 @@ export const clone = (instance, highWaterMark) => {
 
 	// Check that body is a stream and not form-data object
 	// note: we can't clone the form-data object without having it as a dependency
-	if ((body instanceof Stream) && (typeof body.getBoundary !== 'function')) {
+	if ((body instanceof Stream) && (typeof (body as any).getBoundary !== 'function')) {
 		// Tee instance body
 		p1 = new PassThrough({highWaterMark});
 		p2 = new PassThrough({highWaterMark});
