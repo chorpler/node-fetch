@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.recommended.json",
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ]
+}
