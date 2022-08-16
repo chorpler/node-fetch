@@ -8,7 +8,7 @@ import {FetchBaseError} from './base';
  * FetchError interface for operational errors
  */
 export class FetchError extends FetchBaseError {
-	public code:number = 0;
+	public code:string|number = 0;
 	public errno:number = 0;
 	public erroredSysCall:string = "";
 	/**

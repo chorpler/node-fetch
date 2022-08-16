@@ -20,7 +20,7 @@ const INTERNALS = Symbol('Response internals');
  * @return  Void
  */
 export default class Response extends Body {
-	constructor(body = null, options = {}) {
+	constructor(body:any = null, options:any = {}) {
 		super(body, options);
 
 		// eslint-disable-next-line no-eq-null, eqeqeq, no-negated-condition

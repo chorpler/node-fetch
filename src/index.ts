@@ -11,10 +11,10 @@
 // import zlib from 'node:zlib';
 // import Stream, {PassThrough, pipeline as pump} from 'node:stream';
 // import {Buffer} from 'node:buffer';
-import http from 'http';
-import https from 'https';
-import zlib from 'zlib';
-import Stream, {PassThrough, pipeline as pump} from 'stream';
+import * as http from 'http';
+import * as https from 'https';
+import * as zlib from 'zlib';
+import {Stream, PassThrough, pipeline as pump} from 'stream';
 import {Buffer} from 'buffer';
 
 import dataUriToBuffer from 'data-uri-to-buffer';
@@ -69,7 +69,7 @@ export default async function fetch(url, options_) {
 		// Wrap http.request into fetch
 		const send = (parsedURL.protocol === 'https:' ? https : http).request;
 		const {signal} = request;
-		let response = null;
+		let response:Response|null = null;
 
 		const abort = () => {
 			const error = new AbortError('The operation was aborted.');
@@ -127,12 +127,12 @@ export default async function fetch(url, options_) {
 			request_.on('socket', s => {
 				let endedWithEventsCount;
 				s.prependListener('end', () => {
-					endedWithEventsCount = s._eventsCount;
+					endedWithEventsCount = (s as any)._eventsCount;
 				});
 				s.prependListener('close', hadError => {
 					// if end happened before close but the socket didn't emit an error, do it now
-					if (response && endedWithEventsCount < s._eventsCount && !hadError) {
-						const error = new Error('Premature close');
+					if (response && endedWithEventsCount < (s as any)._eventsCount && !hadError) {
+						const error = new FetchError('Premature close');
 						error.code = 'ERR_STREAM_PREMATURE_CLOSE';
 						response.body.emit('error', error);
 					}
@@ -145,12 +145,12 @@ export default async function fetch(url, options_) {
 			const headers = fromRawHeaders(response_.rawHeaders);
 
 			// HTTP fetch step 5
-			if (isRedirect(response_.statusCode)) {
+			if (isRedirect((response_ as any).statusCode)) {
 				// HTTP fetch step 5.2
 				const location = headers.get('Location');
 
 				// HTTP fetch step 5.3
-				let locationURL = null;
+				let locationURL:URL|null = null;
 				try {
 					locationURL = location === null ? null : new URL(location, request.url);
 				} catch {
@@ -180,7 +180,7 @@ export default async function fetch(url, options_) {
 						}
 
 						// HTTP-redirect fetch step 5
-						if (request.counter >= request.follow) {
+						if ((request as any).counter >= (request as any).follow) {
 							reject(new FetchError(`maximum redirect reached at: ${request.url}`, 'max-redirect'));
 							finalize();
 							return;
@@ -190,12 +190,12 @@ export default async function fetch(url, options_) {
 						// Create a new Request object.
 						const requestOptions = {
 							headers: new Headers(request.headers),
-							follow: request.follow,
-							counter: request.counter + 1,
-							agent: request.agent,
-							compress: request.compress,
+							follow: (request as any).follow,
+							counter: (request as any).counter + 1,
+							agent: (request as any).agent,
+							compress: (request as any).compress,
 							method: request.method,
-							body: clone(request),
+							body: clone(request, {}),
 							signal: request.signal,
 							size: request.size,
 							referrer: request.referrer,
@@ -238,7 +238,7 @@ export default async function fetch(url, options_) {
 						}
 
 						// HTTP-redirect fetch step 15
-						resolve(fetch(new Request(locationURL, requestOptions)));
+						resolve(fetch(new Request(locationURL, requestOptions), {}));
 						finalize();
 						return;
 					}
@@ -250,12 +250,12 @@ export default async function fetch(url, options_) {
 
 			// Prepare response
 			if (signal) {
-				response_.once('end', () => {
+				(response_ as any).once('end', () => {
 					signal.removeEventListener('abort', abortAndFinalize);
 				});
 			}
 
-			let body = pump(response_, new PassThrough(), error => {
+			let body = pump((response_ as any), new PassThrough(), error => {
 				if (error) {
 					reject(error);
 				}
@@ -263,7 +263,7 @@ export default async function fetch(url, options_) {
 			// see https://github.com/nodejs/node/pull/29376
 			/* c8 ignore next 3 */
 			if (process.version < 'v12.10') {
-				response_.on('aborted', abortAndFinalize);
+				(response_ as any).on('aborted', abortAndFinalize);
 			}
 
 			const responseOptions = {
@@ -272,8 +272,8 @@ export default async function fetch(url, options_) {
 				statusText: response_.statusMessage,
 				headers,
 				size: request.size,
-				counter: request.counter,
-				highWaterMark: request.highWaterMark
+				counter: (request as any).counter,
+				highWaterMark: (request as any).highWaterMark
 			};
 
 			// HTTP-network fetch step 12.1.1.3
@@ -287,7 +287,7 @@ export default async function fetch(url, options_) {
 			// 3. no Content-Encoding header
 			// 4. no content response (204)
 			// 5. content not modified response (304)
-			if (!request.compress || request.method === 'HEAD' || codings === null || response_.statusCode === 204 || response_.statusCode === 304) {
+			if (!(request as any).compress || request.method === 'HEAD' || codings === null || response_.statusCode === 204 || response_.statusCode === 304) {
 				response = new Response(body, responseOptions);
 				resolve(response);
 				return;
@@ -319,7 +319,7 @@ export default async function fetch(url, options_) {
 			if (codings === 'deflate' || codings === 'x-deflate') {
 				// Handle the infamous raw deflate response from old servers
 				// a hack for old IIS and Apache servers
-				const raw = pump(response_, new PassThrough(), error => {
+				const raw = pump((response_ as any), new PassThrough(), error => {
 					if (error) {
 						reject(error);
 					}
@@ -391,7 +391,7 @@ function fixResponseChunkedTransferBadEnding(request, errorCallback) {
 	request.on('socket', socket => {
 		const onSocketClose = () => {
 			if (isChunkedTransfer && !properLastChunkReceived) {
-				const error = new Error('Premature close');
+				const error = new FetchError('Premature close');
 				error.code = 'ERR_STREAM_PREMATURE_CLOSE';
 				errorCallback(error);
 			}

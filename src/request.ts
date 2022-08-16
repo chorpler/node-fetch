@@ -19,6 +19,7 @@ import {
 } from './utils/referrer.js';
 
 const INTERNALS = Symbol('Request internals');
+type Mixed = Request|URL|any;
 
 /**
  * Check if `obj` is an instance of Request.
@@ -47,14 +48,14 @@ const doBadDataWarn = deprecate(() => {},
  * @return  Void
  */
 export default class Request extends Body {
-	constructor(input, init = {}) {
+	constructor(input:URL|Request|{}, init:any = {}) {
 		let parsedURL;
 
 		// Normalize input and force URL to be encoded as UTF-8 (https://github.com/node-fetch/node-fetch/issues/245)
 		if (isRequest(input)) {
-			parsedURL = new URL(input.url);
+			parsedURL = new URL((input as Request).url);
 		} else {
-			parsedURL = new URL(input);
+			parsedURL = new URL((input as URL));
 			input = {};
 		}
 
@@ -62,7 +63,7 @@ export default class Request extends Body {
 			throw new TypeError(`${parsedURL} is an url with embedded credentials.`);
 		}
 
-		let method = init.method || input.method || 'GET';
+		let method = init.method || (input as Request).method || 'GET';
 		if (/^(delete|get|head|options|post|put)$/i.test(method)) {
 			method = method.toUpperCase();
 		}
@@ -72,22 +73,22 @@ export default class Request extends Body {
 		}
 
 		// eslint-disable-next-line no-eq-null, eqeqeq
-		if ((init.body != null || (isRequest(input) && input.body !== null)) &&
+		if ((init.body != null || (isRequest(input) && (input as Request).body !== null)) &&
 			(method === 'GET' || method === 'HEAD')) {
 			throw new TypeError('Request with GET/HEAD method cannot have body');
 		}
 
 		const inputBody = init.body ?
 			init.body :
-			(isRequest(input) && input.body !== null ?
-				clone(input) :
+			(isRequest(input) && (input as Request).body !== null ?
+				clone((input as Request), {}) :
 				null);
 
 		super(inputBody, {
-			size: init.size || input.size || 0
+			size: init.size || (input as Request).size || 0
 		});
 
-		const headers = new Headers(init.headers || input.headers || {});
+		const headers = new Headers(init.headers || (input as Request).headers || {});
 
 		if (inputBody !== null && !headers.has('Content-Type')) {
 			const contentType = extractContentType(inputBody, this);
@@ -97,7 +98,7 @@ export default class Request extends Body {
 		}
 
 		let signal = isRequest(input) ?
-			input.signal :
+		(input as Request).signal :
 			null;
 		if ('signal' in init) {
 			signal = init.signal;
@@ -110,7 +111,7 @@ export default class Request extends Body {
 
 		// §5.4, Request constructor steps, step 15.1
 		// eslint-disable-next-line no-eq-null, eqeqeq
-		let referrer = init.referrer == null ? input.referrer : init.referrer;
+		let referrer = init.referrer == null ? (input as Request).referrer : init.referrer;
 		if (referrer === '') {
 			// §5.4, Request constructor steps, step 15.2
 			referrer = 'no-referrer';
@@ -118,14 +119,14 @@ export default class Request extends Body {
 			// §5.4, Request constructor steps, step 15.3.1, 15.3.2
 			const parsedReferrer = new URL(referrer);
 			// §5.4, Request constructor steps, step 15.3.3, 15.3.4
-			referrer = /^about:(\/\/)?client$/.test(parsedReferrer) ? 'client' : parsedReferrer;
+			referrer = /^about:(\/\/)?client$/.test((parsedReferrer as any)) ? 'client' : parsedReferrer;
 		} else {
 			referrer = undefined;
 		}
 
 		this[INTERNALS] = {
 			method,
-			redirect: init.redirect || input.redirect || 'follow',
+			redirect: init.redirect || (input as Request).redirect || 'follow',
 			headers,
 			parsedURL,
 			signal,
@@ -133,16 +134,16 @@ export default class Request extends Body {
 		};
 
 		// Node-fetch-only options
-		this.follow = init.follow === undefined ? (input.follow === undefined ? 20 : input.follow) : init.follow;
-		this.compress = init.compress === undefined ? (input.compress === undefined ? true : input.compress) : init.compress;
-		this.counter = init.counter || input.counter || 0;
-		this.agent = init.agent || input.agent;
-		this.highWaterMark = init.highWaterMark || input.highWaterMark || 16384;
-		this.insecureHTTPParser = init.insecureHTTPParser || input.insecureHTTPParser || false;
+		(this as any).follow = init.follow === undefined ? ((input as any).follow === undefined ? 20 : (input as any).follow) : init.follow;
+		(this as any).compress = init.compress === undefined ? ((input as any).compress === undefined ? true : (input as any).compress) : init.compress;
+		(this as any).counter = init.counter || (input as any).counter || 0;
+		(this as any).agent = init.agent || (input as any).agent;
+		(this as any).highWaterMark = init.highWaterMark || (input as any).highWaterMark || 16384;
+		(this as any).insecureHTTPParser = init.insecureHTTPParser || (input as any).insecureHTTPParser || false;
 
 		// §5.4, Request constructor steps, step 16.
 		// Default is empty string per https://fetch.spec.whatwg.org/#concept-request-referrer-policy
-		this.referrerPolicy = init.referrerPolicy || input.referrerPolicy || '';
+		this.referrerPolicy = init.referrerPolicy || (input as Request).referrerPolicy || '';
 	}
 
 	/** @returns {string} */
@@ -235,7 +236,7 @@ export const getNodeRequestOptions = request => {
 	}
 
 	// HTTP-network-or-cache fetch steps 2.4-2.7
-	let contentLengthValue = null;
+	let contentLengthValue:string|null = null;
 	if (request.body === null && /^(post|put)$/i.test(request.method)) {
 		contentLengthValue = '0';
 	}

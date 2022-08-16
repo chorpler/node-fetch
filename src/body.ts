@@ -18,6 +18,10 @@ import {FormData, formDataToBlob} from 'formdata-polyfill/esm.min.js';
 import {FetchError} from './errors/fetch-error.js';
 import {FetchBaseError} from './errors/base.js';
 import {isBlob, isURLSearchParameters} from './utils/is.js';
+import {toFormData} from './utils/multipart-parser';
+
+
+export type Mixed = Request|URL|any;
 
 const pipeline = promisify(Stream.pipeline);
 const INTERNALS = Symbol('Body internals');
@@ -84,7 +88,7 @@ export default class Body {
 		this.size = size;
 
 		if (body instanceof Stream) {
-			body.on('error', error_ => {
+			(body as any).on('error', error_ => {
 				const error = error_ instanceof FetchBaseError ?
 					error_ :
 					new FetchError(`Invalid response body while trying to fetch ${(this as any).url}: ${error_.message}`, 'system', error_);
@@ -125,7 +129,7 @@ export default class Body {
 			return formData;
 		}
 
-		const {toFormData} = await import('./utils/multipart-parser.js');
+		// const {toFormData} = await import('./utils/multipart-parser.js');
 		return toFormData(this.body, ct);
 	}
 

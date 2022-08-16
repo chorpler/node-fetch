@@ -9,19 +9,19 @@ var external = Object.keys(require('../package.json').dependencies);
 
 export default config => {
   return {
-    input: 'src/index.js',
+    input: 'src/index.ts',
     output: {
       format: config.format,
       file: config.dest
     },
     external: external,
     plugins: [
-      resolve(),
+			resolve(),
       commonjs(),
-      // typescript({
-      //   rollupCommonJSResolveHack: true,
-      // }),
-      buble(),
+      typescript({
+        rollupCommonJSResolveHack: true,
+      }),
+      // buble(),
       replace({'process.browser': JSON.stringify(!!config.browser)})
     ]
   };
