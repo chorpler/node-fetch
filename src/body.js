@@ -5,9 +5,12 @@
  * Body interface provides common methods for Request and Response
  */
 
-import Stream, {PassThrough} from 'node:stream';
-import {types, deprecate, promisify} from 'node:util';
-import {Buffer} from 'node:buffer';
+// import Stream, {PassThrough} from 'node:stream';
+// import {types, deprecate, promisify} from 'node:util';
+// import {Buffer} from 'node:buffer';
+import Stream, {PassThrough} from 'stream';
+import {types, deprecate, promisify} from 'util';
+import {Buffer} from 'buffer';
 
 import Blob from 'fetch-blob';
 import {FormData, formDataToBlob} from 'formdata-polyfill/esm.min.js';

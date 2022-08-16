@@ -1,4 +1,5 @@
-import {isIP} from 'node:net';
+// import {isIP} from 'node:net';
+import {isIP} from 'net';
 
 /**
  * @external URL
