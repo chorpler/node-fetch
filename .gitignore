@@ -43,3 +43,6 @@ yarn.lock
 
 # Ignore IDE
 .idea
+
+# Interrupted build files
+.*_cache
