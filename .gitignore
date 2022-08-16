@@ -1,3 +1,6 @@
+# Sketch temporary file
+~*.sketch
+
 # Logs
 logs
 *.log
@@ -40,3 +43,6 @@ yarn.lock
 
 # Ignore IDE
 .idea
+
+# Interrupted build files
+.*_cache
