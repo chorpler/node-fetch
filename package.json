@@ -23,6 +23,7 @@
         "browserify:rollup": "browserify -t [ babelify --global --presets [ babel-preset-env ] ] -t brfs -p bundle-collapser/plugin -s $npm_package_brVars_name lib/index.browser.js > dist/$npm_package_brVars_package.js",
         "browserify": "npm run browserify:rollup",
         "build": "cross-env BABEL_ENV=rollup rollup -c",
+        "build:browser": "npm run build && fse copy browser.js lib/index.browser.js",
         "prepare": "npm run build",
         "rollup": "cross-env BABEL_ENV=rollup rollup -c",
         "test": "cross-env BABEL_ENV=test mocha --require babel-register --throw-deprecation test/test.js",
@@ -56,6 +57,7 @@
         }
     },
     "devDependencies": {
+        "@atao60/fse-cli": "0.0.63",
         "@babel/core": "7.18.10",
         "@babel/plugin-transform-async-to-generator": "7.18.6",
         "@babel/polyfill": "7.12.1",
@@ -80,6 +82,7 @@
         "codecov": "3.3.0",
         "cross-env": "^5.2.0",
         "form-data": "^2.3.3",
+        "fs-extra": "10.1.0",
         "is-builtin-module": "^1.0.0",
         "mocha": "^5.0.0",
         "npm-run-all": "4.1.5",

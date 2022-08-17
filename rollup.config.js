@@ -18,7 +18,7 @@ export default {
     { file: 'lib/index.js', format: 'cjs', exports: 'named' },
     { file: 'lib/index.es.js', format: 'es', exports: 'named', intro: 'process.emitWarning("The .es.js file is deprecated. Use .mjs instead.");' },
     { file: 'lib/index.mjs', format: 'es', exports: 'named' },
-    { file: 'lib/index.browser.js', browser: true, format: 'iife', sourceMap: 'inline', name: "nodeFetch", exports: 'named' },
+    // { file: 'lib/index.browser.js', browser: true, format: 'iife', sourceMap: 'inline', name: "nodeFetch", exports: 'named' },
     { file: 'lib/index.browser.es.js', format: 'esm', exports: 'named' },
   ],
   plugins: [
