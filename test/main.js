@@ -1,12 +1,12 @@
 // Test tools
-import {lookup} from 'node:dns';
-import crypto from 'node:crypto';
-import fs from 'node:fs';
-import http from 'node:http';
-import path from 'node:path';
-import stream from 'node:stream';
-import vm from 'node:vm';
-import zlib from 'node:zlib';
+import {lookup} from 'dns';
+import crypto from 'crypto';
+import fs from 'fs';
+import http from 'http';
+import path from 'path';
+import stream from 'stream';
+import vm from 'vm';
+import zlib from 'zlib';
 
 import {text} from 'stream-consumers';
 import AbortControllerMysticatea from 'abort-controller';
