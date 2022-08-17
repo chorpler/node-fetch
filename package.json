@@ -1,12 +1,16 @@
 {
   "name": "@onsite/node-fetch",
-  "version": "3.3.0-rc.1",
+  "version": "3.3.0-rc.2",
   "description": "A light-weight module that brings Fetch API to node.js",
-  "main": "./src/index.js",
+  "main": "./lib/index.mjs",
+  "mainComment": "./src/index.js",
   "private": false,
   "sideEffects": false,
   "type": "module",
   "files": [
+    "cjs",
+    "esm",
+    "lib",
     "src",
     "@types/index.d.ts"
   ],
