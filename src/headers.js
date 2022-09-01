@@ -4,8 +4,8 @@
  * Headers class offers convenient helpers
  */
 
-import {types} from 'node:util';
-import http from 'node:http';
+import {types} from 'util';
+import http from 'http';
 
 /* c8 ignore next 9 */
 const validateHeaderName = typeof http.validateHeaderName === 'function' ?

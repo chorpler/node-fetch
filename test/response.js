@@ -1,4 +1,4 @@
-import * as stream from 'node:stream';
+import * as stream from 'stream';
 import chai from 'chai';
 import {Response, Blob} from '../src/index.js';
 import TestServer from './utils/server.js';
